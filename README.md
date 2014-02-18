@@ -139,6 +139,6 @@ You can also easily use RDFa with JSON-LD encoded template variables:
 <div about="{{ ... }}">
     <time property="{{ ... }}"
 	      typeof="{{ ... }}"
-		  content="{{ ... }}">{{ sc.created|djsonld_coerce|date:"Y" }}</span>
+		  content="{{ ... }}">{{ sc.created|djsonld_coerce|date:"Y" }}</time>
 </div>
 ```
