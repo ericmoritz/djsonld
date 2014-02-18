@@ -87,10 +87,10 @@ def compact(data, cdata=""):
     ...    "headline": "http://schema.org/headline",
     ...    "dateCreated": "http://schema.org/dateCreated"
     ... }{% enddjsonld_compact %}
-    ... {{ sc.headline }}{{ sc.dateCreated|djsonld_coerce }}
+    ... {{ sc.headline }} {{ sc.dateCreated|djsonld_coerce|date:"Y" }}
     ... ''')
     >>> t.render(c).strip()
-    u'This is the title2014-02-14'
+    u'This is the title 2014'
 
     Notice that the schema:dateCreated value is still a string, you
     will still need to parse it using a filter.
