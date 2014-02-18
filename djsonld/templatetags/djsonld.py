@@ -1,5 +1,6 @@
 from django import template
 from django.template.base import TagHelperNode, parse_bits
+from ..coerce_type import coerce_type
 from inspect import getargspec
 from pyld import jsonld
 import json
@@ -58,26 +59,43 @@ def assignment_tag_with_cdata(library, func=None, takes_context=None, name=None)
         raise template.TemplateSyntaxError("Invalid arguments provided to assignment_tag_with_cdata")
 
 
-@assignment_tag_with_cdata(register)
+@register.filter
+def djsonld_coerce(x):
+    return coerce_type(x)
+
+
+@assignment_tag_with_cdata(register, name="djsonld_compact")
 def compact(data, cdata=""):
-    """
+    """Compacts a dict 
+
     >>> c = template.Context({
     ...   'story': {
     ...     '@context': {
     ...       'title': 'http://schema.org/headline',
+    ...       'created': {
+    ...           '@id': 'http://schema.org/dateCreated',
+    ...           '@type': 'http://www.w3.org/2001/XMLSchema#dateTime'
+    ...       },
     ...     },
     ...     'title': 'This is the title',
+    ...     'created': '2014-02-14',
     ...   }
     ... })
     >>> t = template.Template('''
     ... {% load djsonld %}
-    ... {% compact story as story_compact %}{
-    ...    "headline": "http://schema.org/headline"
-    ... }{% endcompact %}
-    ... {{ story_compact.headline }}
+    ... {% djsonld_compact story as sc %}{
+    ...    "headline": "http://schema.org/headline",
+    ...    "dateCreated": "http://schema.org/dateCreated"
+    ... }{% enddjsonld_compact %}
+    ... {{ sc.headline }}{{ sc.dateCreated|djsonld_coerce }}
     ... ''')
     >>> t.render(c).strip()
-    u'This is the title'
+    u'This is the title2014-02-14'
+
+    Notice that the schema:dateCreated value is still a string, you
+    will still need to parse it using a filter.
     """
     context = json.loads(cdata)
     return jsonld.compact(data, context)
+        
+
