@@ -2,9 +2,10 @@ from decimal import Decimal
 from dateutil import parser as dt_parser
 import isodate
 from urlparse import urlparse
+from djsonld import jsonld_node
 
 
-def coerce_type(x):
+def coerce_type(node):
     """
     Attempt use type coercion on known types
     <http://www.w3.org/TR/json-ld/#type-coercion>, otherwse the @value is returned
@@ -230,12 +231,8 @@ def coerce_type(x):
 
     
     """
-    if isinstance(x, dict):
-        type_iri = x.get("@type")
-        value = x.get("@value")
-    else:
-        type_iri = None
-        value = x
+    value = jsonld_node.node_value(node)
+    type_iri = jsonld_node.node_type(node)
 
     def as_string():
         if isinstance(value, bool):

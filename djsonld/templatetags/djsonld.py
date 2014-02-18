@@ -1,11 +1,13 @@
 from django import template
 from django.template.base import TagHelperNode, parse_bits
 from ..coerce_type import coerce_type
+from ..jsonld_node import node_type, node_id, node_value
 from inspect import getargspec
 from pyld import jsonld
 import json
 
 register = template.Library()
+
 
 
 def assignment_tag_with_cdata(library, func=None, takes_context=None, name=None):
@@ -64,6 +66,21 @@ def djsonld_coerce(x):
     return coerce_type(x)
 
 
+@register.filter
+def djsonld_value(node):
+    return node_value(node)
+
+
+@register.filter
+def djsonld_id(node):
+    return node_id(node)
+
+
+@register.filter
+def djsonld_type(node):
+    return node_type(node)
+
+
 @assignment_tag_with_cdata(register, name="djsonld_compact")
 def compact(data, cdata=""):
     """Compacts a dict 
@@ -77,8 +94,9 @@ def compact(data, cdata=""):
     ...           '@type': 'http://www.w3.org/2001/XMLSchema#dateTime'
     ...       },
     ...     },
+    ...     '@id': '#1',
     ...     'title': 'This is the title',
-    ...     'created': '2014-02-14',
+    ...     'created': '2014-02-14T14:00:00-04:00',
     ...   }
     ... })
     >>> t = template.Template('''
@@ -91,9 +109,6 @@ def compact(data, cdata=""):
     ... ''')
     >>> t.render(c).strip()
     u'This is the title 2014'
-
-    Notice that the schema:dateCreated value is still a string, you
-    will still need to parse it using a filter.
     """
     context = json.loads(cdata)
     return jsonld.compact(data, context)
